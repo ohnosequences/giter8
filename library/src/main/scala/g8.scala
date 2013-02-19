@@ -75,6 +75,23 @@ object G8 {
   def packageDir(s: String) = s.replace(".", System.getProperty("file.separator"))
   def addRandomId(s: String) = s + "-" + new java.math.BigInteger(256, new java.security.SecureRandom).toString(32)
 
+  def depsImport(l: String): String = 
+    if (l.isEmpty) ""
+    else l.split(",").map(_.trim).map(upperCamel).mkString(
+          "import ohnosequences.statica.bundles.{",
+          ", ",
+          "}")
+
+  def depsHList(l: String): String = 
+    if (l.isEmpty) "HNil: HNil"
+    else l.split(",").map(_.trim).map(upperCamel).mkString(" :: ") + " :: HNil"
+
+  def depsSbt(l: String): String = 
+    if (l.isEmpty) ""
+    else l.split(",").map(_.trim).map(normalize).map(
+          "libraryDependencies += \"ohnosequences\" %% \"" + _ + "\" % \"0.1.0\""
+        ).mkString("\n")
+
 }
 
 object G8Helpers {
@@ -233,7 +250,7 @@ object G8Helpers {
       }
     }
 
-    Right("Template applied in %s" format (base.toString))
+    Right("G8 Template applied in %s" format (base.toString))
   }
 
   def copyScaffolds(sf: File, output: File) {
@@ -294,6 +311,10 @@ class StringRenderer extends org.clapper.scalasti.AttributeRenderer[String] {
     case "snake"    | "snake-case"   => snakeCase(value)
     case "packaged" | "package-dir"  => packageDir(value)
     case "random"   | "generate-random" => addRandomId(value)
-    case _                           => value
+    case "depsImport" => {println(value); depsImport(value)}
+    case "depsHlist"  => {println(value); depsHList(value)}
+    case "depsSbt"    => {println(value); depsSbt(value)}
+    case _            => value
   }
+
 }
