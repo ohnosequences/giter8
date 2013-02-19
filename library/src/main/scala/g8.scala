@@ -250,7 +250,7 @@ object G8Helpers {
       }
     }
 
-    Right("Template applied in %s" format (base.toString))
+    Right("G8 Template applied in %s" format (base.toString))
   }
 
   def copyScaffolds(sf: File, output: File) {
@@ -311,9 +311,9 @@ class StringRenderer extends org.clapper.scalasti.AttributeRenderer[String] {
     case "snake"    | "snake-case"   => snakeCase(value)
     case "packaged" | "package-dir"  => packageDir(value)
     case "random"   | "generate-random" => addRandomId(value)
-    case "depsImport" => depsImport(value)
-    case "depsHlist"  => depsHList(value)
-    case "depsSbt"    => depsSbt(value)
+    case "depsImport" => {println(value); depsImport(value)}
+    case "depsHlist"  => {println(value); depsHList(value)}
+    case "depsSbt"    => {println(value); depsSbt(value)}
     case _            => value
   }
 

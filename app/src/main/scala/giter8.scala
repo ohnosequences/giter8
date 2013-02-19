@@ -59,7 +59,7 @@ class Giter8 extends xsbti.AppMain with Apply {
     }
   }
 
-  def usage = """giter8 %s
+  def usage = """giter8 %s fooo!
                 |Usage: g8 [TEMPLATE] [OPTION]...
                 |Apply specified template.
                 |
