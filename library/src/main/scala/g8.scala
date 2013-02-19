@@ -294,26 +294,26 @@ class StringRenderer extends org.clapper.scalasti.AttributeRenderer[String] {
     case "snake"    | "snake-case"   => snakeCase(value)
     case "packaged" | "package-dir"  => packageDir(value)
     case "random"   | "generate-random" => addRandomId(value)
-    case "deps-import" => depsImport(value.split(",").map(_.trim).toList)
-    case "deps-hlist"  => depsHList(value.split(",").map(_.trim).toList)
-    case "deps-sbt"    => depsSbt(value.split(",").map(_.trim).toList)
-    case _                           => value
+    case "deps-import" => depsImport(value)
+    case "deps-hlist"  => depsHList(value)
+    case "deps-sbt"    => depsSbt(value)
+    case _             => value
   }
 
-  def depsImport(l: List[String]): String = 
+  def depsImport(l: String): String = 
     if (l.isEmpty) ""
-    else l.map(upperCamel).mkString(
+    else l.split(",").map(_.trim).map(upperCamel).mkString(
           "import ohnosequences.statica.bundles.{",
           ", ",
           "}")
 
-  def depsHList(l: List[String]): String = 
+  def depsHList(l: String): String = 
     if (l.isEmpty) "HNil: HNil"
-    else l.map(upperCamel).mkString(" :: ") + " :: HNil"
+    else l.split(",").map(_.trim).map(upperCamel).mkString(" :: ") + " :: HNil"
 
-  def depsSbt(l: List[String]): String = 
+  def depsSbt(l: String): String = 
     if (l.isEmpty) ""
-    else l.map(
+    else l.split(",").map(_.trim).map(
           "libraryDependencies += \"ohnosequences\" %% \"" + _ + "\" % \"0.1.0\""
         ).mkString(
           "Bundle(",
