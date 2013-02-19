@@ -294,6 +294,10 @@ class StringRenderer extends org.clapper.scalasti.AttributeRenderer[String] {
     case "snake"    | "snake-case"   => snakeCase(value)
     case "packaged" | "package-dir"  => packageDir(value)
     case "random"   | "generate-random" => addRandomId(value)
+    case "import"   | "import-list"  => importList(value)
     case _                           => value
   }
+
+  def importList(l: String): String = 
+    l.split(",").map(_.trim.upperCamel).mkString(", ")
 }
