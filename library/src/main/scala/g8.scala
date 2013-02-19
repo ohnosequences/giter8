@@ -129,7 +129,6 @@ object G8Helpers {
   * Extract params, template files, and scaffolding folder based on the conventionnal project structure
   */
   def fetchInfo(f: File, tmplFolder: Option[String], scaffoldFolder: Option[String]) = {
-    import java.io.FileInputStream
 
     val templatesRoot = tmplFolder.map(new File(f, _)).getOrElse(f)
     val fs = getFiles(_ => true)(templatesRoot)
@@ -141,7 +140,7 @@ object G8Helpers {
     }
 
     val parameters = propertiesFiles.headOption.map{ f =>
-      val props = readProps(new FileInputStream(f))
+      val props = readProps(scala.io.Source.fromFile(f).mkString)
       Ls.lookup(props).right.toOption.getOrElse(props)
     }.getOrElse(Map.empty)
 
@@ -260,15 +259,11 @@ object G8Helpers {
   }
 
 
-  def readProps(stm: java.io.InputStream) = {
-    import scala.collection.JavaConversions._
-    val p = new java.util.Properties
-    p.load(stm)
-    stm.close()
-    (Map.empty[String, String] /: p.propertyNames) { (m, k) =>
-      m + (k.toString -> p.getProperty(k.toString))
+  def readProps(s: String) =
+    scala.util.parsing.json.JSON.parseFull(s) match {
+      case Some(m: Map[String, String]) => m
+      case _ => Map.empty[String, String]
     }
-  }
 }
 
 class StringRenderer extends org.clapper.scalasti.AttributeRenderer[String] {
