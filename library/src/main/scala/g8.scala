@@ -294,10 +294,10 @@ class StringRenderer extends org.clapper.scalasti.AttributeRenderer[String] {
     case "snake"    | "snake-case"   => snakeCase(value)
     case "packaged" | "package-dir"  => packageDir(value)
     case "random"   | "generate-random" => addRandomId(value)
-    case "deps-import" => depsImport(value)
-    case "deps-hlist"  => depsHList(value)
-    case "deps-sbt"    => depsSbt(value)
-    case _             => value
+    case "depsImport" => depsImport(value)
+    case "depsHlist"  => depsHList(value)
+    case "depsSbt"    => depsSbt(value)
+    case _            => value
   }
 
   def depsImport(l: String): String = 
@@ -313,11 +313,8 @@ class StringRenderer extends org.clapper.scalasti.AttributeRenderer[String] {
 
   def depsSbt(l: String): String = 
     if (l.isEmpty) ""
-    else l.split(",").map(_.trim).map(
+    else l.split(",").map(_.trim).map(normalize).map(
           "libraryDependencies += \"ohnosequences\" %% \"" + _ + "\" % \"0.1.0\""
-        ).mkString(
-          "Bundle(",
-          " :: ",
-          " :: HNil)")
+        ).mkString("\n")
 
 }
