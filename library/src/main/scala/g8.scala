@@ -33,7 +33,7 @@ object G8 {
     Seq(out)
   }
 
-  def write(out: File, template: String, parameters: Map[String, String], append: Boolean = false) {
+  def write(out: File, template: String, parameters: Map[String, Any], append: Boolean = false) {
     val applied = new StringTemplate(template)
       .setAttributes(parameters)
       .registerRenderer(renderer)
@@ -41,8 +41,8 @@ object G8 {
     FileUtils.writeStringToFile(out, applied, UTF_8, append)
   }
 
-  def verbatim(file: File, parameters: Map[String,String]): Boolean =
-    parameters.get("verbatim") map { s => globMatch(file, s.split(' ').toSeq) } getOrElse {false}
+  def verbatim(file: File, parameters: Map[String, Any]): Boolean =
+    parameters.get("verbatim") map { s => globMatch(file, s.toString.split(' ').toSeq) } getOrElse {false}
   private def globMatch(file: File, patterns: Seq[String]): Boolean =
     patterns exists { globRegex(_).findFirstIn(file.getName).isDefined }
   private def globRegex(pattern: String) = "^%s$".format(pattern flatMap {
@@ -51,9 +51,9 @@ object G8 {
     case '.' => """\."""
     case x => x.toString
   }).r
-  def expandPath(relative: String, toPath: File, parameters: Map[String,String]): File = {
+  def expandPath(relative: String, toPath: File, parameters: Map[String, Any]): File = {
     val fileParams = Map(parameters.toSeq map {
-      case (k, v) if k == "package" => (k, v.replaceAll("""\.""", System.getProperty("file.separator") match {
+      case (k, v: String) if k == "package" => (k, v.replaceAll("""\.""", System.getProperty("file.separator") match {
           case "\\"  => "\\\\"
           case sep => sep
         }))
@@ -91,7 +91,7 @@ object G8Helpers {
 
   import Regs._
 
-  private def applyT(fetch: File => (Map[String, String], Stream[File], File, Option[File]), isScaffolding: Boolean = false)(tmpl: File, outputFolder: File, arguments: Seq[String] = Nil) = {
+  private def applyT(fetch: File => (Map[String, Any], Stream[File], File, Option[File]), isScaffolding: Boolean = false)(tmpl: File, outputFolder: File, arguments: Seq[String] = Nil) = {
     val (defaults, templates, templatesRoot, scaffoldsRoot) = fetch(tmpl)
 
     val parameters = arguments.headOption.map { _ =>
@@ -104,7 +104,7 @@ object G8Helpers {
       }
     }.getOrElse { interact(defaults) }
 
-    val base = new File(outputFolder, parameters.get("name").map(G8.normalize).getOrElse("."))
+    val base = new File(outputFolder, parameters.get("name").map(_.toString).map(G8.normalize).getOrElse("."))
 
     val r = write(templatesRoot, templates, parameters, base, isScaffolding)
     for(
@@ -141,7 +141,9 @@ object G8Helpers {
 
     val parameters = propertiesFiles.headOption.map{ f =>
       val props = readProps(scala.io.Source.fromFile(f).mkString)
-      Ls.lookup(props).right.toOption.getOrElse(props)
+      println(props)
+      props
+      // Ls.lookup(props).right.toOption.getOrElse(props)
     }.getOrElse(Map.empty)
 
     val g8templates = tmpls.filter(!_.isDirectory)
@@ -149,7 +151,7 @@ object G8Helpers {
     (parameters, g8templates, templatesRoot, scaffoldsRoot)
   }
 
-  def interact(params: Map[String, String]) = {
+  def interact(params: Map[String, Any]) = {
     val (desc, others) = params partition { case (k,_) => k == "description" }
 
     desc.values.foreach { d =>
@@ -167,7 +169,7 @@ object G8Helpers {
         }
       }
       println()
-      liner(0, d.split(" "))
+      // liner(0, d.split(" "))
       println("\n")
     }
 
@@ -186,7 +188,7 @@ object G8Helpers {
 
   def write(tmpl: File,
             templates: Iterable[File],
-            parameters: Map[String,String],
+            parameters: Map[String, Any],
             base: File, isScaffolding: Boolean) = {
 
     import java.nio.charset.MalformedInputException
@@ -259,11 +261,8 @@ object G8Helpers {
   }
 
 
-  def readProps(s: String) =
-    scala.util.parsing.json.JSON.parseFull(s) match {
-      case Some(m: Map[String, String]) => m
-      case _ => Map.empty[String, String]
-    }
+  def readProps(s: String): Map[String, Any] =
+    scala.util.parsing.json.JSON.parseFull(s).getOrElse(Map.empty).asInstanceOf[Map[String, Any]]
 }
 
 class StringRenderer extends org.clapper.scalasti.AttributeRenderer[String] {
