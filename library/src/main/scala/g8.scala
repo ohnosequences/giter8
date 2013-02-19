@@ -75,6 +75,23 @@ object G8 {
   def packageDir(s: String) = s.replace(".", System.getProperty("file.separator"))
   def addRandomId(s: String) = s + "-" + new java.math.BigInteger(256, new java.security.SecureRandom).toString(32)
 
+  def depsImport(l: String): String = 
+    if (l.isEmpty) ""
+    else l.split(",").map(_.trim).map(upperCamel).mkString(
+          "import ohnosequences.statica.bundles.{",
+          ", ",
+          "}")
+
+  def depsHList(l: String): String = 
+    if (l.isEmpty) "HNil: HNil"
+    else l.split(",").map(_.trim).map(upperCamel).mkString(" :: ") + " :: HNil"
+
+  def depsSbt(l: String): String = 
+    if (l.isEmpty) ""
+    else l.split(",").map(_.trim).map(normalize).map(
+          "libraryDependencies += \"ohnosequences\" %% \"" + _ + "\" % \"0.1.0\""
+        ).mkString("\n")
+
 }
 
 object G8Helpers {
@@ -299,22 +316,5 @@ class StringRenderer extends org.clapper.scalasti.AttributeRenderer[String] {
     case "depsSbt"    => depsSbt(value)
     case _            => value
   }
-
-  def depsImport(l: String): String = 
-    if (l.isEmpty) ""
-    else l.split(",").map(_.trim).map(upperCamel).mkString(
-          "import ohnosequences.statica.bundles.{",
-          ", ",
-          "}")
-
-  def depsHList(l: String): String = 
-    if (l.isEmpty) "HNil: HNil"
-    else l.split(",").map(_.trim).map(upperCamel).mkString(" :: ") + " :: HNil"
-
-  def depsSbt(l: String): String = 
-    if (l.isEmpty) ""
-    else l.split(",").map(_.trim).map(normalize).map(
-          "libraryDependencies += \"ohnosequences\" %% \"" + _ + "\" % \"0.1.0\""
-        ).mkString("\n")
 
 }
