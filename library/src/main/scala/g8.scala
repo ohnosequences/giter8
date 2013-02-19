@@ -94,15 +94,16 @@ object G8Helpers {
   private def applyT(fetch: File => (Map[String, Any], Stream[File], File, Option[File]), isScaffolding: Boolean = false)(tmpl: File, outputFolder: File, arguments: Seq[String] = Nil) = {
     val (defaults, templates, templatesRoot, scaffoldsRoot) = fetch(tmpl)
 
-    val parameters = arguments.headOption.map { _ =>
-      (defaults /: arguments) {
-        case (map, Param(key, value)) if map.contains(key) =>
-          map + (key -> value)
-        case (map, Param(key, _)) =>
-          println("Ignoring unrecognized parameter: " + key)
-          map
-      }
-    }.getOrElse { interact(defaults) }
+    val parameters = defaults
+    // arguments.headOption.map { _ =>
+    //   (defaults /: arguments) {
+    //     case (map, Param(key, value)) if map.contains(key) =>
+    //       map + (key -> value)
+    //     case (map, Param(key, _)) =>
+    //       println("Ignoring unrecognized parameter: " + key)
+    //       map
+    //   }
+    // }.getOrElse { interact(defaults) }
 
     val base = new File(outputFolder, parameters.get("name").map(_.toString).map(G8.normalize).getOrElse("."))
 
@@ -140,11 +141,11 @@ object G8Helpers {
     }
 
     val parameters = propertiesFiles.headOption.map{ f =>
-      val props = readProps(scala.io.Source.fromFile(f).mkString)
-      println(props)
-      props
-      // Ls.lookup(props).right.toOption.getOrElse(props)
+      readProps(scala.io.Source.fromFile(f).mkString)
     }.getOrElse(Map.empty)
+
+    println("parameters:")
+    println(parameters)
 
     val g8templates = tmpls.filter(!_.isDirectory)
 
@@ -169,7 +170,7 @@ object G8Helpers {
         }
       }
       println()
-      // liner(0, d.split(" "))
+      liner(0, d.toString.split(" "))
       println("\n")
     }
 
